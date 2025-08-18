@@ -1,12 +1,17 @@
 const user = require('../model/user-model');
+const bcrypt = require('bcrypt');
 
 const login = async (req, res) => {
     try {
-        const userData = await user.findOne({ username: req.body.username, password: req.body.password });
+        const userData = await user.findOne({ username: req.body.username });
         if (!userData) {
-            return res.status(401).json({ message: "Invalid username or password" });
+            return res.status(401).json({ message: "Invalid username" });
         }
-        res.status(200).json({ message: "Login successful", user: userData });
+        const isPasswordValid = await bcrypt.compare(req.body.password, userData.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+        res.status(200).json({ message: "Login successful" });
     } catch (error) {
         console.error("Error during login:", error);
         res.status(500).json({ message: error.message });
@@ -22,9 +27,11 @@ const register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: "Username already exists" });
         }
+
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const newUser = await user.insertOne({
             username: req.body.username,
-            password: req.body.password,
+            password: hashedPassword,
             email: req.body.email
         })
         if (!newUser) {
