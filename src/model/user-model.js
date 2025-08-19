@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { minLength, maxLength } = require('zod');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -13,8 +14,12 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        minLength: 6,
+        maxLength: 50
     },
 });
+
+
 
 module.exports = mongoose.model('Users', userSchema);

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
 const mongoSanitizer = require('express-mongo-sanitize');
+const rateLimit = require('express-rate-limit');
 
 require('dotenv').config();
 
@@ -23,7 +24,7 @@ app.use(helmet.contentSecurityPolicy({
     }
 }));
 
-app.use(mongoSanitizer())
+// app.use(mongoSanitizer())
 
 app.use(cors({
     origin: 'http://localhost:3333', // Adjust this to your frontend URL
@@ -48,6 +49,18 @@ app.listen(8000, () => {
     console.log('Server is running on http://localhost:8000');
 })
 
+app.use(rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per window
+}));
+
+app.use('/auth/login', rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes   
+  max: 5 // limit each IP to 5 requests per window)
+}));
+
+
+console.log(process.env.MONGO_URL);
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         console.log("Connected to MongoDB");
@@ -55,3 +68,8 @@ mongoose.connect(process.env.MONGO_URL)
     .catch(err => {
         console.error("MongoDB connection error:", err);
     });
+
+app.use((err, req, res, next) => {
+    console.error("Error occurred:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+});
