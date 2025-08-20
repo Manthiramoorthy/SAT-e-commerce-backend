@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { minLength, maxLength } = require('zod');
+const { de } = require('zod/locales');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -18,6 +19,11 @@ const userSchema = new mongoose.Schema({
         minLength: 6,
         maxLength: 50
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    }
 });
 
 

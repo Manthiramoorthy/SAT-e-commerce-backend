@@ -2,8 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
-const mongoSanitizer = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+
+const {verifyToken} = require('./utils/token-verification');
 
 require('dotenv').config();
 
@@ -36,7 +37,7 @@ app.use(cors({
 app.use(express.json());
 
 
-app.use('/products', productRoute);
+app.use('/products', verifyToken,  productRoute);
 
 app.use('/auth', userRoute);
 
